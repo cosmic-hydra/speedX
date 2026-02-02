@@ -32,7 +32,7 @@ class MASTClient:
         Maximum number of retries for failed requests. Default is 3.
     """
     
-    DEFAULT_BASE_URL = "https://mast.stsci.edu/api/v0.1"
+    DEFAULT_BASE_URL = "https://mast.stsci.edu/api/v0"
     
     def __init__(
         self,
@@ -368,7 +368,7 @@ class MASTClient:
         self._rate_limit()
         
         # Construct download URL
-        download_url = f"https://mast.stsci.edu/api/v0.1/Download/file?uri={product_uri}"
+        download_url = f"https://mast.stsci.edu/api/v0/Download/file?uri={product_uri}"
         
         try:
             response = requests.get(

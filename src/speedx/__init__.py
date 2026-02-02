@@ -4,6 +4,7 @@ __version__ = "0.2.0"
 
 from .classifier import RAGBoostClassifier
 from .mast_client import MASTClient
+from .irsa_client import IRSAClient
 from .ensemble import EnsembleClassifier, StackedClassifier
 from .online_learning import OnlineRAGBoostClassifier, ActiveLearningClassifier
 from .advanced_features import AdvancedFeatureEngineer
@@ -13,6 +14,7 @@ from .intensive_training import OnlineDataTrainer, TransferLearningTrainer
 __all__ = [
     "RAGBoostClassifier",
     "MASTClient",
+    "IRSAClient",
     "EnsembleClassifier",
     "StackedClassifier",
     "OnlineRAGBoostClassifier",

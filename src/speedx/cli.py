@@ -8,6 +8,7 @@ from pathlib import Path
 import pickle
 
 from .mast_client import MASTClient
+from .irsa_client import IRSAClient
 from .classifier import RAGBoostClassifier
 from .features import get_default_featurizer
 from .fits_utils import extract_fits_sketch, sketch_to_features
@@ -316,5 +317,105 @@ def sketch_fits(fits_path, output):
         click.echo(json.dumps(sketch, indent=2))
 
 
+@main.command()
+@click.option(
+    "--ra",
+    type=float,
+    required=True,
+    help="Right Ascension in degrees (J2000)"
+)
+@click.option(
+    "--dec",
+    type=float,
+    required=True,
+    help="Declination in degrees (J2000)"
+)
+@click.option(
+    "--radius",
+    type=float,
+    default=0.1,
+    help="Search radius in degrees (default: 0.1)"
+)
+@click.option(
+    "--mission",
+    default="wise",
+    help="Mission name (default: wise)"
+)
+@click.option(
+    "--dataset",
+    default="neowiser",
+    help="Dataset name (default: neowiser)"
+)
+@click.option(
+    "--table",
+    default="p1bm_frm",
+    help="Table name (default: p1bm_frm)"
+)
+@click.option(
+    "--max-records",
+    "-n",
+    type=int,
+    help="Maximum number of records to retrieve"
+)
+@click.option(
+    "--output",
+    "-o",
+    required=True,
+    help="Output file path (parquet or csv)"
+)
+@click.option(
+    "--format",
+    "-f",
+    type=click.Choice(["parquet", "csv"]),
+    default="parquet",
+    help="Output format"
+)
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    help="Enable verbose output"
+)
+def query_neowise(ra, dec, radius, mission, dataset, table, max_records, output, format, verbose):
+    """
+    Query NEOWISE observations from IRSA and save to file.
+    
+    Example:
+        speedx query-neowise --ra 83.6333 --dec 22.0144 --radius 0.5 -o neowise.parquet
+    """
+    try:
+        if verbose:
+            click.echo("Initializing IRSA client...")
+        
+        click.echo(f"Querying IRSA NEOWISE for observations at RA={ra}, Dec={dec}...")
+        
+        client = IRSAClient()
+        
+        observations = client.query_by_position(
+            ra=ra,
+            dec=dec,
+            radius=radius,
+            mission=mission,
+            dataset=dataset,
+            table=table,
+            max_records=max_records
+        )
+        
+        click.echo(f"Found {len(observations)} observations")
+        
+        if not observations.empty:
+            if verbose:
+                click.echo(f"Saving to {output}...")
+            client.save_metadata(observations, output, format=format)
+            click.echo(f"✓ Metadata saved to {output}")
+        else:
+            click.echo("⚠ No observations found", err=True)
+            
+    except Exception as e:
+        click.echo(f"✗ Error: {str(e)}", err=True)
+        raise click.Abort()
+
+
 if __name__ == "__main__":
     main()
+

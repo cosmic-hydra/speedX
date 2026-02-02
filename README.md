@@ -1,6 +1,6 @@
 # speedX
 
-A high-throughput science-content classifier for HST data using the HST/MAST API.
+A high-throughput science-content classifier for HST and NEOWISE data using the MAST and IRSA APIs.
 
 ## Overview
 
@@ -8,6 +8,7 @@ speedX is a Python package designed for fast inference on large astronomy datase
 
 - **RAGBoostClassifier**: A custom retrieval-augmented boosting classifier implemented from scratch
 - **MAST Integration**: Query HST observations and download data products via the public MAST API
+- **IRSA Integration**: Query NEOWISE observations via the IRSA SIA (Simple Image Access) protocol
 - **Feature Extraction**: Extract features from observation metadata and FITS files
 - **CLI Tools**: Command-line interface for querying, training, and inference
 - **Ensemble Methods**: Multiple classifier ensembles for improved accuracy
@@ -32,7 +33,8 @@ speedX is a Python package designed for fast inference on large astronomy datase
 - **Model Persistence**: Save/load models with pickle
 - **Scikit-learn API**: Compatible `get_params`/`set_params`/`score` methods
 - **Better Validation**: Comprehensive input validation with informative errors
-- **Retry Logic**: Exponential backoff for failed MAST requests
+- **Retry Logic**: Exponential backoff for failed MAST/IRSA requests
+- **IRSA NEOWISE**: Query NEOWISE mission data via IRSA SIA protocol
 
 ## Installation
 
@@ -60,6 +62,14 @@ Query observation metadata from MAST and save to a local file:
 
 ```bash
 speedx query-metadata --instrument "ACS/WFC" --max-records 100 -o observations.parquet
+```
+
+### Query NEOWISE Observations
+
+Query NEOWISE observations from IRSA by sky position:
+
+```bash
+speedx query-neowise --ra 83.6333 --dec 22.0144 --radius 0.5 -o neowise.parquet
 ```
 
 ### Fetch Sample Data
@@ -149,6 +159,25 @@ Options:
   -t, --target TEXT         Filter by target name
   -p, --proposal TEXT       Filter by proposal ID
   -n, --max-records INTEGER Maximum records to retrieve (default: 1000)
+  -o, --output TEXT         Output file path (required)
+  -f, --format [parquet|csv] Output format (default: parquet)
+```
+
+### `speedx query-neowise`
+
+Query NEOWISE observations from IRSA.
+
+```bash
+speedx query-neowise [OPTIONS]
+
+Options:
+  --ra FLOAT                Right Ascension in degrees (J2000) (required)
+  --dec FLOAT               Declination in degrees (J2000) (required)
+  --radius FLOAT            Search radius in degrees (default: 0.1)
+  --mission TEXT            Mission name (default: wise)
+  --dataset TEXT            Dataset name (default: neowiser)
+  --table TEXT              Table name (default: p1bm_frm)
+  -n, --max-records INTEGER Maximum records to retrieve
   -o, --output TEXT         Output file path (required)
   -f, --format [parquet|csv] Output format (default: parquet)
 ```
@@ -253,6 +282,31 @@ sketch = extract_fits_sketch("observation.fits")
 features = sketch_to_features(sketch)
 ```
 
+### IRSA NEOWISE Usage
+
+```python
+from speedx import IRSAClient
+
+# Query NEOWISE observations by position
+client = IRSAClient()
+observations = client.query_by_position(
+    ra=83.6333,  # Right Ascension in degrees (J2000)
+    dec=22.0144,  # Declination in degrees (J2000)
+    radius=0.5,  # Search radius in degrees
+    max_records=100
+)
+
+# Query with custom mission/dataset/table
+observations = client.query_neowise(
+    ra=83.6333,
+    dec=22.0144,
+    size=0.5,
+    mission="wise",
+    dataset="neowiser",
+    table="p1bm_frm"
+)
+```
+
 ## Testing
 
 Run the test suite:
@@ -267,7 +321,9 @@ Run with coverage:
 pytest --cov=speedx --cov-report=html
 ```
 
-## MAST API Integration
+## API Integrations
+
+### MAST API Integration
 
 speedX uses the public MAST API to query HST observations and download data products. Key features:
 
@@ -298,6 +354,54 @@ Download a product:
 ```python
 file_path = client.download_product(
     product_uri="mast:HST/product/file.fits",
+    output_dir="./data"
+)
+```
+
+### IRSA API Integration
+
+speedX uses the IRSA SIA (Simple Image Access) protocol to query NEOWISE mission data. Key features:
+
+- **No Authentication Required**: Uses public IRSA endpoints
+- **SIA Protocol**: Standard Virtual Observatory protocol for image access
+- **Position-based Queries**: Search by sky coordinates (RA/Dec)
+- **Multiple Datasets**: Support for WISE and NEOWISE datasets
+- **Local Caching**: Save metadata to parquet/CSV for offline use
+
+### Example Queries
+
+Query NEOWISE observations by position:
+```python
+from speedx import IRSAClient
+
+client = IRSAClient()
+obs = client.query_by_position(
+    ra=83.6333,
+    dec=22.0144,
+    radius=0.5,
+    max_records=100
+)
+```
+
+Query with custom parameters:
+```python
+obs = client.query_neowise(
+    ra=83.6333,
+    dec=22.0144,
+    size=0.5,
+    mission="wise",
+    dataset="neowiser",
+    table="p1bm_frm",
+    BAND="W1"  # Additional query parameters
+)
+```
+
+Download data products:
+```python
+# Get access URL from query results
+access_url = obs.iloc[0]['access_url']  # Assuming column exists in results
+file_path = client.download_product(
+    access_url=access_url,
     output_dir="./data"
 )
 ```
