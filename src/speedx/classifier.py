@@ -40,6 +40,16 @@ class RABoostClassifier:
         learning_rate: float = 0.1,
         random_state: Optional[int] = None
     ):
+        # Input validation
+        if n_estimators <= 0:
+            raise ValueError(f"n_estimators must be positive, got {n_estimators}")
+        if k_neighbors <= 0:
+            raise ValueError(f"k_neighbors must be positive, got {k_neighbors}")
+        if embedding_dim <= 0:
+            raise ValueError(f"embedding_dim must be positive, got {embedding_dim}")
+        if learning_rate <= 0:
+            raise ValueError(f"learning_rate must be positive, got {learning_rate}")
+        
         self.n_estimators = n_estimators
         self.k_neighbors = k_neighbors
         self.embedding_dim = embedding_dim
@@ -214,9 +224,45 @@ class RABoostClassifier:
         -------
         self : RABoostClassifier
             Fitted classifier.
+            
+        Raises
+        ------
+        ValueError
+            If X or y are empty, or if they have incompatible shapes.
+            
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from speedx import RABoostClassifier
+        >>> X = np.random.randn(100, 10)
+        >>> y = np.random.randint(0, 3, size=100)
+        >>> clf = RABoostClassifier(n_estimators=10, random_state=42)
+        >>> clf.fit(X, y)
+        RABoostClassifier(...)
+        >>> y_pred = clf.predict(X)
+        >>> accuracy = (y_pred == y).mean()
+        
+        See Also
+        --------
+        predict : Predict class labels
+        predict_proba : Predict class probabilities
         """
         X = np.asarray(X)
         y = np.asarray(y)
+        
+        # Input validation
+        if X.size == 0:
+            raise ValueError("X cannot be empty")
+        if y.size == 0:
+            raise ValueError("y cannot be empty")
+        if len(X) != len(y):
+            raise ValueError(
+                f"X and y must have the same length. Got X: {len(X)}, y: {len(y)}"
+            )
+        if len(X.shape) != 2:
+            raise ValueError(
+                f"X must be 2-dimensional. Got shape: {X.shape}"
+            )
         
         n_samples = X.shape[0]
         
@@ -279,8 +325,27 @@ class RABoostClassifier:
         -------
         proba : np.ndarray of shape (n_samples, n_classes)
             Class probabilities.
+            
+        Raises
+        ------
+        ValueError
+            If called before fitting or if X has wrong shape.
         """
+        if self.X_train_ is None:
+            raise ValueError("Model must be fitted before predicting. Call fit() first.")
+        
         X = np.asarray(X)
+        
+        if X.size == 0:
+            raise ValueError("X cannot be empty")
+        if len(X.shape) != 2:
+            raise ValueError(f"X must be 2-dimensional. Got shape: {X.shape}")
+        if X.shape[1] != self.X_train_.shape[1]:
+            raise ValueError(
+                f"X has {X.shape[1]} features, but model was trained with "
+                f"{self.X_train_.shape[1]} features"
+            )
+        
         n_samples = X.shape[0]
         n_classes = len(self.classes_)
         

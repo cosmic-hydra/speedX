@@ -28,6 +28,8 @@ class MASTClient:
         Request timeout in seconds. Default is 30.
     rate_limit_delay : float, optional
         Delay between requests in seconds to respect rate limits. Default is 0.1.
+    max_retries : int, optional
+        Maximum number of retries for failed requests. Default is 3.
     """
     
     DEFAULT_BASE_URL = "https://mast.stsci.edu/api/v0.1"
@@ -36,11 +38,13 @@ class MASTClient:
         self,
         base_url: Optional[str] = None,
         timeout: int = 30,
-        rate_limit_delay: float = 0.1
+        rate_limit_delay: float = 0.1,
+        max_retries: int = 3
     ):
         self.base_url = base_url or self.DEFAULT_BASE_URL
         self.timeout = timeout
         self.rate_limit_delay = rate_limit_delay
+        self.max_retries = max_retries
         self._last_request_time = 0
     
     def _rate_limit(self):
@@ -178,32 +182,43 @@ class MASTClient:
                 page=page
             )
             
-            try:
-                response = requests.post(
-                    f"{self.base_url}/invoke",
-                    json=query,
-                    timeout=self.timeout
-                )
-                response.raise_for_status()
-                data = response.json()
-                
-                if "data" not in data or not data["data"]:
-                    break
-                
-                all_data.extend(data["data"])
-                
-                # Check if we've reached max_records or end of results
-                if max_records and len(all_data) >= max_records:
-                    all_data = all_data[:max_records]
-                    break
-                
-                if len(data["data"]) < page_size:
-                    break
-                
-                page += 1
-                
-            except requests.RequestException as e:
-                raise RuntimeError(f"MAST API request failed: {e}")
+            # Retry logic for failed requests
+            for attempt in range(self.max_retries):
+                try:
+                    response = requests.post(
+                        f"{self.base_url}/invoke",
+                        json=query,
+                        timeout=self.timeout
+                    )
+                    response.raise_for_status()
+                    data = response.json()
+                    break  # Success
+                    
+                except (requests.RequestException, requests.ConnectionError) as e:
+                    if attempt < self.max_retries - 1:
+                        # Exponential backoff
+                        wait_time = (2 ** attempt) * self.rate_limit_delay
+                        time.sleep(wait_time)
+                        continue
+                    else:
+                        raise RuntimeError(
+                            f"MAST API request failed after {self.max_retries} attempts: {e}"
+                        )
+            
+            if "data" not in data or not data["data"]:
+                break
+            
+            all_data.extend(data["data"])
+            
+            # Check if we've reached max_records or end of results
+            if max_records and len(all_data) >= max_records:
+                all_data = all_data[:max_records]
+                break
+            
+            if len(data["data"]) < page_size:
+                break
+            
+            page += 1
         
         # Convert to DataFrame
         if all_data:

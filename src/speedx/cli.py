@@ -61,31 +61,47 @@ def main():
     default="parquet",
     help="Output format"
 )
-def query_metadata(instrument, target, proposal, max_records, output, format):
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    help="Enable verbose output"
+)
+def query_metadata(instrument, target, proposal, max_records, output, format, verbose):
     """
     Query HST observation metadata from MAST and save to file.
     
     Example:
         speedx query-metadata --instrument "ACS/WFC" --max-records 100 -o data.parquet
     """
-    click.echo("Querying MAST for HST observations...")
-    
-    client = MASTClient()
-    
-    observations = client.query_observations(
-        instrument=instrument,
-        target_name=target,
-        proposal_id=proposal,
-        max_records=max_records
-    )
-    
-    click.echo(f"Found {len(observations)} observations")
-    
-    if not observations.empty:
-        client.save_metadata(observations, output, format=format)
-        click.echo(f"Metadata saved to {output}")
-    else:
-        click.echo("No observations found")
+    try:
+        if verbose:
+            click.echo("Initializing MAST client...")
+        
+        click.echo("Querying MAST for HST observations...")
+        
+        client = MASTClient()
+        
+        observations = client.query_observations(
+            instrument=instrument,
+            target_name=target,
+            proposal_id=proposal,
+            max_records=max_records
+        )
+        
+        click.echo(f"Found {len(observations)} observations")
+        
+        if not observations.empty:
+            if verbose:
+                click.echo(f"Saving to {output}...")
+            client.save_metadata(observations, output, format=format)
+            click.echo(f"✓ Metadata saved to {output}")
+        else:
+            click.echo("⚠ No observations found", err=True)
+            
+    except Exception as e:
+        click.echo(f"✗ Error: {str(e)}", err=True)
+        raise click.Abort()
 
 
 @main.command()
