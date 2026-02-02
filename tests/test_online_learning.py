@@ -1,7 +1,7 @@
 """Tests for online learning."""
 import numpy as np
 import pytest
-from speedx.online_learning import OnlineRABoostClassifier, ActiveLearningClassifier
+from speedx.online_learning import OnlineRAGBoostClassifier, ActiveLearningClassifier
 
 
 def test_online_classifier_partial_fit():
@@ -12,7 +12,7 @@ def test_online_classifier_partial_fit():
     X1 = np.random.randn(20, 5)
     y1 = np.random.randint(0, 2, size=20)
     
-    clf = OnlineRABoostClassifier(n_estimators=3, random_state=42)
+    clf = OnlineRAGBoostClassifier(n_estimators=3, random_state=42)
     clf.partial_fit(X1, y1, classes=np.array([0, 1]))
     
     assert clf.n_samples_seen_ == 20
@@ -35,7 +35,7 @@ def test_online_classifier_memory_limit():
     """Test that online classifier respects memory limit."""
     np.random.seed(42)
     
-    clf = OnlineRABoostClassifier(max_train_samples=50, random_state=42)
+    clf = OnlineRAGBoostClassifier(max_train_samples=50, random_state=42)
     
     # Add many samples
     for i in range(10):

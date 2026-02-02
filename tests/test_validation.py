@@ -1,42 +1,42 @@
 """Tests for input validation and error handling."""
 import numpy as np
 import pytest
-from speedx.classifier import RABoostClassifier
+from speedx.classifier import RAGBoostClassifier
 
 
 def test_classifier_negative_n_estimators():
     """Test that negative n_estimators raises ValueError."""
     with pytest.raises(ValueError, match="n_estimators must be positive"):
-        RABoostClassifier(n_estimators=-1)
+        RAGBoostClassifier(n_estimators=-1)
 
 
 def test_classifier_zero_n_estimators():
     """Test that zero n_estimators raises ValueError."""
     with pytest.raises(ValueError, match="n_estimators must be positive"):
-        RABoostClassifier(n_estimators=0)
+        RAGBoostClassifier(n_estimators=0)
 
 
 def test_classifier_negative_k_neighbors():
     """Test that negative k_neighbors raises ValueError."""
     with pytest.raises(ValueError, match="k_neighbors must be positive"):
-        RABoostClassifier(k_neighbors=-1)
+        RAGBoostClassifier(k_neighbors=-1)
 
 
 def test_classifier_negative_embedding_dim():
     """Test that negative embedding_dim raises ValueError."""
     with pytest.raises(ValueError, match="embedding_dim must be positive"):
-        RABoostClassifier(embedding_dim=-1)
+        RAGBoostClassifier(embedding_dim=-1)
 
 
 def test_classifier_negative_learning_rate():
     """Test that negative learning_rate raises ValueError."""
     with pytest.raises(ValueError, match="learning_rate must be positive"):
-        RABoostClassifier(learning_rate=-0.1)
+        RAGBoostClassifier(learning_rate=-0.1)
 
 
 def test_classifier_fit_empty_X():
     """Test that fitting with empty X raises ValueError."""
-    clf = RABoostClassifier()
+    clf = RAGBoostClassifier()
     X = np.array([])
     y = np.array([])
     
@@ -46,7 +46,7 @@ def test_classifier_fit_empty_X():
 
 def test_classifier_fit_empty_y():
     """Test that fitting with empty y raises ValueError."""
-    clf = RABoostClassifier()
+    clf = RAGBoostClassifier()
     X = np.random.randn(10, 5)
     y = np.array([])
     
@@ -56,7 +56,7 @@ def test_classifier_fit_empty_y():
 
 def test_classifier_fit_mismatched_lengths():
     """Test that mismatched X and y lengths raise ValueError."""
-    clf = RABoostClassifier()
+    clf = RAGBoostClassifier()
     X = np.random.randn(10, 5)
     y = np.array([0, 1, 0])
     
@@ -66,7 +66,7 @@ def test_classifier_fit_mismatched_lengths():
 
 def test_classifier_fit_wrong_X_dimension():
     """Test that 1D X raises ValueError."""
-    clf = RABoostClassifier()
+    clf = RAGBoostClassifier()
     X = np.array([1, 2, 3, 4, 5])
     y = np.array([0, 1, 0, 1, 0])
     
@@ -76,7 +76,7 @@ def test_classifier_fit_wrong_X_dimension():
 
 def test_classifier_predict_before_fit():
     """Test that predicting before fitting raises ValueError."""
-    clf = RABoostClassifier()
+    clf = RAGBoostClassifier()
     X = np.random.randn(5, 3)
     
     with pytest.raises(ValueError, match="Model must be fitted before predicting"):
@@ -85,7 +85,7 @@ def test_classifier_predict_before_fit():
 
 def test_classifier_predict_proba_before_fit():
     """Test that predict_proba before fitting raises ValueError."""
-    clf = RABoostClassifier()
+    clf = RAGBoostClassifier()
     X = np.random.randn(5, 3)
     
     with pytest.raises(ValueError, match="Model must be fitted before predicting"):
@@ -94,7 +94,7 @@ def test_classifier_predict_proba_before_fit():
 
 def test_classifier_predict_empty_X():
     """Test that predicting with empty X raises ValueError."""
-    clf = RABoostClassifier(random_state=42)
+    clf = RAGBoostClassifier(random_state=42)
     X_train = np.random.randn(10, 5)
     y_train = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
     clf.fit(X_train, y_train)
@@ -106,7 +106,7 @@ def test_classifier_predict_empty_X():
 
 def test_classifier_predict_wrong_dimension():
     """Test that predicting with 1D X raises ValueError."""
-    clf = RABoostClassifier(random_state=42)
+    clf = RAGBoostClassifier(random_state=42)
     X_train = np.random.randn(10, 5)
     y_train = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
     clf.fit(X_train, y_train)
@@ -118,7 +118,7 @@ def test_classifier_predict_wrong_dimension():
 
 def test_classifier_predict_wrong_n_features():
     """Test that predicting with wrong number of features raises ValueError."""
-    clf = RABoostClassifier(random_state=42)
+    clf = RAGBoostClassifier(random_state=42)
     X_train = np.random.randn(10, 5)
     y_train = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
     clf.fit(X_train, y_train)

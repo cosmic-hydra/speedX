@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Initial release of speedX
-- RABoostClassifier: Custom retrieval-augmented boosting classifier
+- RAGBoostClassifier: Custom retrieval-augmented boosting classifier
   - Embedding generation via random projection
   - Exact kNN retrieval with cosine similarity
   - Adaptive boosting with decision stumps

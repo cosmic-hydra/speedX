@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 from speedx.ensemble import EnsembleClassifier, StackedClassifier
-from speedx.classifier import RABoostClassifier
+from speedx.classifier import RAGBoostClassifier
 
 
 def test_ensemble_initialization():
@@ -68,7 +68,7 @@ def test_stacked_classifier():
     
     # Create base classifiers
     base_clfs = [
-        RABoostClassifier(n_estimators=3, random_state=i)
+        RAGBoostClassifier(n_estimators=3, random_state=i)
         for i in range(2)
     ]
     
@@ -88,7 +88,7 @@ def test_stacked_classifier_score():
     X = np.random.randn(40, 5)
     y = np.random.randint(0, 2, size=40)
     
-    base_clfs = [RABoostClassifier(n_estimators=2, random_state=i) for i in range(2)]
+    base_clfs = [RAGBoostClassifier(n_estimators=2, random_state=i) for i in range(2)]
     stacked = StackedClassifier(base_classifiers=base_clfs)
     stacked.fit(X, y)
     

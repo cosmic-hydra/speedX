@@ -6,7 +6,7 @@ A high-throughput science-content classifier for HST data using the HST/MAST API
 
 speedX is a Python package designed for fast inference on large astronomy datasets. It provides:
 
-- **RABoostClassifier**: A custom retrieval-augmented boosting classifier implemented from scratch
+- **RAGBoostClassifier**: A custom retrieval-augmented boosting classifier implemented from scratch
 - **MAST Integration**: Query HST observations and download data products via the public MAST API
 - **Feature Extraction**: Extract features from observation metadata and FITS files
 - **CLI Tools**: Command-line interface for querying, training, and inference
@@ -24,7 +24,7 @@ speedX is a Python package designed for fast inference on large astronomy datase
 ### 🤖 Advanced AI Capabilities
 - **Ensemble Classifier**: Combine multiple models with soft/hard voting
 - **Stacked Ensemble**: Meta-learning with stacked classifiers
-- **Online Learning**: Incremental updates with `OnlineRABoostClassifier`
+- **Online Learning**: Incremental updates with `OnlineRAGBoostClassifier`
 - **Active Learning**: Identify uncertain samples for efficient labeling
 - **Advanced Features**: Polynomial features, PCA, domain-specific transformations
 
@@ -80,7 +80,7 @@ speedx sketch-fits observation.fits -o sketch.json
 
 ### Train a Classifier
 
-Train the RABoostClassifier on observation metadata:
+Train the RAGBoostClassifier on observation metadata:
 
 ```bash
 # First, create a labels file (CSV with obs_id and label columns)
@@ -97,9 +97,9 @@ speedx predict -m new_observations.parquet --model model.pkl -o predictions.csv
 
 ## Architecture
 
-### RABoostClassifier
+### RAGBoostClassifier
 
-The RABoostClassifier combines three key techniques:
+The RAGBoostClassifier combines three key techniques:
 
 1. **Embedding Generation**: Uses random projection to create compact feature representations
 2. **kNN Retrieval**: Finds similar training examples to augment features with context
@@ -168,7 +168,7 @@ Options:
 
 ### `speedx train`
 
-Train a RABoostClassifier on observation metadata.
+Train a RAGBoostClassifier on observation metadata.
 
 ```bash
 speedx train [OPTIONS]
@@ -210,7 +210,7 @@ Options:
 ### Basic Usage
 
 ```python
-from speedx import RABoostClassifier, MASTClient
+from speedx import RAGBoostClassifier, MASTClient
 from speedx.features import get_default_featurizer
 import numpy as np
 
@@ -229,7 +229,7 @@ X = featurizer.fit_transform(observations)
 y = np.random.randint(0, 3, size=len(observations))
 
 # Train classifier
-clf = RABoostClassifier(
+clf = RAGBoostClassifier(
     n_estimators=10,
     k_neighbors=5,
     random_state=42
@@ -306,7 +306,7 @@ file_path = client.download_product(
 
 speedX is designed for fast inference:
 
-- **RABoostClassifier**: Lightweight boosting with kNN retrieval
+- **RAGBoostClassifier**: Lightweight boosting with kNN retrieval
 - **FITS Sketching**: Sampling-based statistics avoid loading full arrays
 - **Efficient Storage**: Parquet format for compressed metadata storage
 
@@ -337,7 +337,7 @@ If you use speedX in your research, please cite:
 Use ensemble methods for improved accuracy:
 
 ```python
-from speedx import EnsembleClassifier, RABoostClassifier
+from speedx import EnsembleClassifier, RAGBoostClassifier
 import numpy as np
 
 # Create ensemble of 5 models
@@ -360,10 +360,10 @@ accuracy = ensemble.score(X_test, y_test)
 Update models incrementally with new data:
 
 ```python
-from speedx import OnlineRABoostClassifier
+from speedx import OnlineRAGBoostClassifier
 
 # Create online classifier
-online_clf = OnlineRABoostClassifier(
+online_clf = OnlineRAGBoostClassifier(
     n_estimators=10,
     max_train_samples=10000  # Limit memory usage
 )
@@ -451,8 +451,8 @@ Save and load trained models:
 clf.save('my_model.pkl')
 
 # Load model
-from speedx import RABoostClassifier
-clf = RABoostClassifier.load('my_model.pkl')
+from speedx import RAGBoostClassifier
+clf = RAGBoostClassifier.load('my_model.pkl')
 
 # Use loaded model
 y_pred = clf.predict(X_test)

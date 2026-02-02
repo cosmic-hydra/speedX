@@ -3,12 +3,12 @@ Online learning support for incremental model updates.
 """
 import numpy as np
 from typing import Optional
-from .classifier import RABoostClassifier
+from .classifier import RAGBoostClassifier
 
 
-class OnlineRABoostClassifier(RABoostClassifier):
+class OnlineRAGBoostClassifier(RAGBoostClassifier):
     """
-    Online learning variant of RABoostClassifier.
+    Online learning variant of RAGBoostClassifier.
     
     Supports partial_fit for incremental learning on streaming data.
     
@@ -52,7 +52,7 @@ class OnlineRABoostClassifier(RABoostClassifier):
         X: np.ndarray,
         y: np.ndarray,
         classes: Optional[np.ndarray] = None
-    ) -> "OnlineRABoostClassifier":
+    ) -> "OnlineRAGBoostClassifier":
         """
         Incrementally fit the model.
         
@@ -67,7 +67,7 @@ class OnlineRABoostClassifier(RABoostClassifier):
             
         Returns
         -------
-        self : OnlineRABoostClassifier
+        self : OnlineRAGBoostClassifier
         """
         X = np.asarray(X)
         y = np.asarray(y)
@@ -108,7 +108,7 @@ class ActiveLearningClassifier:
     
     Parameters
     ----------
-    base_classifier : RABoostClassifier
+    base_classifier : RAGBoostClassifier
         Base classifier to use.
     uncertainty_threshold : float, default=0.3
         Entropy threshold for uncertain predictions.
@@ -116,10 +116,10 @@ class ActiveLearningClassifier:
     
     def __init__(
         self,
-        base_classifier: Optional[RABoostClassifier] = None,
+        base_classifier: Optional[RAGBoostClassifier] = None,
         uncertainty_threshold: float = 0.3
     ):
-        self.base_classifier = base_classifier or RABoostClassifier()
+        self.base_classifier = base_classifier or RAGBoostClassifier()
         self.uncertainty_threshold = uncertainty_threshold
     
     def fit(self, X: np.ndarray, y: np.ndarray) -> "ActiveLearningClassifier":

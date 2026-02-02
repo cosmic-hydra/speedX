@@ -1,12 +1,12 @@
-"""Tests for RABoostClassifier."""
+"""Tests for RAGBoostClassifier."""
 import numpy as np
 import pytest
-from speedx.classifier import RABoostClassifier, DecisionStump
+from speedx.classifier import RAGBoostClassifier, DecisionStump
 
 
 def test_classifier_initialization():
     """Test classifier initialization."""
-    clf = RABoostClassifier(
+    clf = RAGBoostClassifier(
         n_estimators=5,
         k_neighbors=3,
         embedding_dim=16,
@@ -41,7 +41,7 @@ def test_classifier_fit_predict():
     y = y[indices]
     
     # Fit classifier
-    clf = RABoostClassifier(
+    clf = RAGBoostClassifier(
         n_estimators=5,
         k_neighbors=3,
         embedding_dim=8,
@@ -78,7 +78,7 @@ def test_classifier_predict_proba():
     X = np.random.randn(n_samples, n_features)
     y = np.random.randint(0, 3, size=n_samples)
     
-    clf = RABoostClassifier(
+    clf = RAGBoostClassifier(
         n_estimators=3,
         k_neighbors=2,
         random_state=42
@@ -102,10 +102,10 @@ def test_embedding_reproducibility():
     y = np.random.randint(0, 2, size=20)
     
     # Fit two classifiers with same random state
-    clf1 = RABoostClassifier(random_state=42)
+    clf1 = RAGBoostClassifier(random_state=42)
     clf1.fit(X, y)
     
-    clf2 = RABoostClassifier(random_state=42)
+    clf2 = RAGBoostClassifier(random_state=42)
     clf2.fit(X, y)
     
     # Embeddings should be identical
@@ -123,7 +123,7 @@ def test_embedding_normalization():
     X = np.random.randn(10, 5)
     y = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
     
-    clf = RABoostClassifier(random_state=42)
+    clf = RAGBoostClassifier(random_state=42)
     clf.fit(X, y)
     
     # Check L2 norm of embeddings
@@ -138,7 +138,7 @@ def test_knn_retrieval():
     X_train = np.random.randn(30, 5)
     y_train = np.random.randint(0, 2, size=30)
     
-    clf = RABoostClassifier(k_neighbors=5, random_state=42)
+    clf = RAGBoostClassifier(k_neighbors=5, random_state=42)
     clf.fit(X_train, y_train)
     
     # Query with training data
@@ -184,7 +184,7 @@ def test_classifier_with_single_class():
     X = np.random.randn(10, 5)
     y = np.zeros(10)  # All same class
     
-    clf = RABoostClassifier(random_state=42)
+    clf = RAGBoostClassifier(random_state=42)
     clf.fit(X, y)
     
     y_pred = clf.predict(X)
@@ -213,7 +213,7 @@ def test_classifier_multiclass():
     X = np.vstack(X)
     y = np.concatenate(y)
     
-    clf = RABoostClassifier(n_estimators=5, random_state=42)
+    clf = RAGBoostClassifier(n_estimators=5, random_state=42)
     clf.fit(X, y)
     
     y_pred = clf.predict(X)

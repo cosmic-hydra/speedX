@@ -3,12 +3,12 @@ Ensemble methods for improved prediction accuracy.
 """
 import numpy as np
 from typing import List, Optional
-from .classifier import RABoostClassifier
+from .classifier import RAGBoostClassifier
 
 
 class EnsembleClassifier:
     """
-    Ensemble of multiple RABoostClassifiers with voting.
+    Ensemble of multiple RAGBoostClassifiers with voting.
     
     Combines predictions from multiple classifiers trained with
     different random seeds or configurations for improved accuracy.
@@ -18,7 +18,7 @@ class EnsembleClassifier:
     n_models : int, default=5
         Number of models in the ensemble.
     base_params : dict, optional
-        Base parameters for each RABoostClassifier.
+        Base parameters for each RAGBoostClassifier.
     voting : str, default='soft'
         Voting method: 'hard' for majority vote, 'soft' for averaged probabilities.
     """
@@ -62,7 +62,7 @@ class EnsembleClassifier:
             params = self.base_params.copy()
             params['random_state'] = params.get('random_state', 42) + i
             
-            model = RABoostClassifier(**params)
+            model = RAGBoostClassifier(**params)
             model.fit(X, y)
             self.models_.append(model)
         
@@ -150,19 +150,19 @@ class StackedClassifier:
     
     Parameters
     ----------
-    base_classifiers : list of RABoostClassifier
+    base_classifiers : list of RAGBoostClassifier
         Base classifiers for the first level.
-    meta_classifier : RABoostClassifier, optional
+    meta_classifier : RAGBoostClassifier, optional
         Meta-classifier for the second level. If None, creates a new one.
     """
     
     def __init__(
         self,
-        base_classifiers: List[RABoostClassifier],
-        meta_classifier: Optional[RABoostClassifier] = None
+        base_classifiers: List[RAGBoostClassifier],
+        meta_classifier: Optional[RAGBoostClassifier] = None
     ):
         self.base_classifiers = base_classifiers
-        self.meta_classifier = meta_classifier or RABoostClassifier(
+        self.meta_classifier = meta_classifier or RAGBoostClassifier(
             n_estimators=5,
             k_neighbors=3,
             random_state=42

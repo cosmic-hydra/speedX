@@ -1,5 +1,5 @@
 """
-RABoostClassifier: Retrieval-Augmented Boosting Classifier.
+RAGBoostClassifier: Retrieval-Augmented Boosting Classifier.
 
 A lightweight custom classifier that uses embedding-based retrieval
 and boosting for fast inference on large astronomy datasets.
@@ -11,7 +11,7 @@ from functools import lru_cache
 import pickle
 
 
-class RABoostClassifier:
+class RAGBoostClassifier:
     """
     Retrieval-Augmented Boosting Classifier.
     
@@ -105,7 +105,7 @@ class RABoostClassifier:
             'use_cache': self.use_cache
         }
     
-    def set_params(self, **params) -> "RABoostClassifier":
+    def set_params(self, **params) -> "RAGBoostClassifier":
         """
         Set the parameters of this estimator.
         
@@ -118,7 +118,7 @@ class RABoostClassifier:
             
         Returns
         -------
-        self : RABoostClassifier
+        self : RAGBoostClassifier
         """
         for key, value in params.items():
             setattr(self, key, value)
@@ -264,9 +264,9 @@ class RABoostClassifier:
         """Create a weak learner (decision stump)."""
         return DecisionStump()
     
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "RABoostClassifier":
+    def fit(self, X: np.ndarray, y: np.ndarray) -> "RAGBoostClassifier":
         """
-        Fit the RABoostClassifier.
+        Fit the RAGBoostClassifier.
         
         Parameters
         ----------
@@ -277,7 +277,7 @@ class RABoostClassifier:
             
         Returns
         -------
-        self : RABoostClassifier
+        self : RAGBoostClassifier
             Fitted classifier.
             
         Raises
@@ -288,12 +288,12 @@ class RABoostClassifier:
         Examples
         --------
         >>> import numpy as np
-        >>> from speedx import RABoostClassifier
+        >>> from speedx import RAGBoostClassifier
         >>> X = np.random.randn(100, 10)
         >>> y = np.random.randint(0, 3, size=100)
-        >>> clf = RABoostClassifier(n_estimators=10, random_state=42)
+        >>> clf = RAGBoostClassifier(n_estimators=10, random_state=42)
         >>> clf.fit(X, y)
-        RABoostClassifier(...)
+        RAGBoostClassifier(...)
         >>> y_pred = clf.predict(X)
         >>> accuracy = (y_pred == y).mean()
         
@@ -514,7 +514,7 @@ class RABoostClassifier:
             pickle.dump(self, f)
     
     @staticmethod
-    def load(filepath: str) -> "RABoostClassifier":
+    def load(filepath: str) -> "RAGBoostClassifier":
         """
         Load model from file.
         
@@ -525,7 +525,7 @@ class RABoostClassifier:
             
         Returns
         -------
-        model : RABoostClassifier
+        model : RAGBoostClassifier
             Loaded model.
         """
         with open(filepath, 'rb') as f:

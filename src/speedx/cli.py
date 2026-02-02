@@ -8,7 +8,7 @@ from pathlib import Path
 import pickle
 
 from .mast_client import MASTClient
-from .classifier import RABoostClassifier
+from .classifier import RAGBoostClassifier
 from .features import get_default_featurizer
 from .fits_utils import extract_fits_sketch, sketch_to_features
 
@@ -178,7 +178,7 @@ def fetch_sample(instrument, n_samples, output_dir):
 )
 def train(metadata, labels, output, n_estimators, k_neighbors):
     """
-    Train a RABoostClassifier on observation metadata.
+    Train a RAGBoostClassifier on observation metadata.
     
     Example:
         speedx train -m data.parquet -l labels.csv -o model.pkl
@@ -207,7 +207,7 @@ def train(metadata, labels, output, n_estimators, k_neighbors):
     y = df["label"].values
     
     # Train classifier
-    clf = RABoostClassifier(
+    clf = RAGBoostClassifier(
         n_estimators=n_estimators,
         k_neighbors=k_neighbors,
         random_state=42

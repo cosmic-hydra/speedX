@@ -11,7 +11,7 @@ Successfully enhanced speedX with advanced AI features, performance optimization
 **New Classifiers (5 types)**
 - `EnsembleClassifier` - Combine multiple models with soft/hard voting
 - `StackedClassifier` - Meta-learning with stacked ensembles
-- `OnlineRABoostClassifier` - Incremental learning on streaming data
+- `OnlineRAGBoostClassifier` - Incremental learning on streaming data
 - `ActiveLearningClassifier` - Uncertainty-based sample selection
 - `AdvancedFeatureEngineer` - Polynomial features, PCA, scaling
 
@@ -64,7 +64,7 @@ Successfully enhanced speedX with advanced AI features, performance optimization
    - `StackedClassifier` - Meta-learning
 
 2. **src/speedx/online_learning.py** (6.4 KB)
-   - `OnlineRABoostClassifier` - Incremental learning
+   - `OnlineRAGBoostClassifier` - Incremental learning
    - `ActiveLearningClassifier` - Uncertainty-based selection
 
 3. **src/speedx/advanced_features.py** (6.4 KB)
@@ -113,9 +113,9 @@ accuracy = ensemble.score(X_test, y_test)
 
 ### Online Learning
 ```python
-from speedx import OnlineRABoostClassifier
+from speedx import OnlineRAGBoostClassifier
 
-online_clf = OnlineRABoostClassifier(max_train_samples=10000)
+online_clf = OnlineRAGBoostClassifier(max_train_samples=10000)
 online_clf.partial_fit(X_batch1, y_batch1, classes=[0, 1, 2])
 online_clf.partial_fit(X_batch2, y_batch2)  # Incremental update
 ```
@@ -137,7 +137,7 @@ y_pred = clf.predict_batch(X_large, batch_size=1000, verbose=True)
 ### Model Persistence (Speed)
 ```python
 clf.save('model.pkl')
-clf = RABoostClassifier.load('model.pkl')  # Instant loading
+clf = RAGBoostClassifier.load('model.pkl')  # Instant loading
 ```
 
 ## Quality Improvements
