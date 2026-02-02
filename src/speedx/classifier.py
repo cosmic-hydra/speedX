@@ -5,8 +5,10 @@ A lightweight custom classifier that uses embedding-based retrieval
 and boosting for fast inference on large astronomy datasets.
 """
 import numpy as np
-from typing import Optional, List, Tuple, Any
+from typing import Optional, List, Tuple, Any, Dict
 import warnings
+from functools import lru_cache
+import pickle
 
 
 class RABoostClassifier:
@@ -30,6 +32,8 @@ class RABoostClassifier:
         Learning rate for boosting.
     random_state : int, optional
         Random seed for reproducibility.
+    use_cache : bool, default=True
+        Whether to cache embeddings for faster repeated predictions.
     """
     
     def __init__(
@@ -38,7 +42,8 @@ class RABoostClassifier:
         k_neighbors: int = 5,
         embedding_dim: int = 32,
         learning_rate: float = 0.1,
-        random_state: Optional[int] = None
+        random_state: Optional[int] = None,
+        use_cache: bool = True
     ):
         # Input validation
         if n_estimators <= 0:
@@ -55,6 +60,7 @@ class RABoostClassifier:
         self.embedding_dim = embedding_dim
         self.learning_rate = learning_rate
         self.random_state = random_state
+        self.use_cache = use_cache
         
         # Internal state
         self.embedding_matrix_ = None
@@ -64,10 +70,59 @@ class RABoostClassifier:
         self.X_train_ = None
         self.y_train_ = None
         self.embeddings_train_ = None
+        self._embedding_cache: Dict[int, np.ndarray] = {}
         
         # Set random seed
         if random_state is not None:
             np.random.seed(random_state)
+    
+    def clear_cache(self):
+        """Clear the embedding cache to free memory."""
+        self._embedding_cache.clear()
+    
+    def get_params(self, deep: bool = True) -> Dict[str, Any]:
+        """
+        Get parameters for this estimator.
+        
+        Compatible with scikit-learn API.
+        
+        Parameters
+        ----------
+        deep : bool, default=True
+            Unused, kept for scikit-learn compatibility.
+            
+        Returns
+        -------
+        params : dict
+            Parameter names mapped to their values.
+        """
+        return {
+            'n_estimators': self.n_estimators,
+            'k_neighbors': self.k_neighbors,
+            'embedding_dim': self.embedding_dim,
+            'learning_rate': self.learning_rate,
+            'random_state': self.random_state,
+            'use_cache': self.use_cache
+        }
+    
+    def set_params(self, **params) -> "RABoostClassifier":
+        """
+        Set the parameters of this estimator.
+        
+        Compatible with scikit-learn API.
+        
+        Parameters
+        ----------
+        **params : dict
+            Estimator parameters.
+            
+        Returns
+        -------
+        self : RABoostClassifier
+        """
+        for key, value in params.items():
+            setattr(self, key, value)
+        return self
     
     def _generate_embedding(self, X: np.ndarray) -> np.ndarray:
         """
@@ -385,6 +440,96 @@ class RABoostClassifier:
         """
         proba = self.predict_proba(X)
         return self.classes_[np.argmax(proba, axis=1)]
+    
+    def predict_batch(
+        self,
+        X: np.ndarray,
+        batch_size: int = 100,
+        verbose: bool = False
+    ) -> np.ndarray:
+        """
+        Predict class labels in batches for memory efficiency.
+        
+        Useful for very large datasets that don't fit in memory.
+        
+        Parameters
+        ----------
+        X : np.ndarray of shape (n_samples, n_features)
+            Input features.
+        batch_size : int, default=100
+            Number of samples per batch.
+        verbose : bool, default=False
+            Whether to print progress.
+            
+        Returns
+        -------
+        y_pred : np.ndarray of shape (n_samples,)
+            Predicted labels.
+        """
+        n_samples = X.shape[0]
+        predictions = np.empty(n_samples, dtype=self.classes_.dtype)
+        
+        n_batches = (n_samples + batch_size - 1) // batch_size
+        
+        for i in range(0, n_samples, batch_size):
+            batch_end = min(i + batch_size, n_samples)
+            X_batch = X[i:batch_end]
+            predictions[i:batch_end] = self.predict(X_batch)
+            
+            if verbose and (i // batch_size) % 10 == 0:
+                batch_num = i // batch_size + 1
+                print(f"Processed batch {batch_num}/{n_batches}")
+        
+        return predictions
+    
+    def score(self, X: np.ndarray, y: np.ndarray) -> float:
+        """
+        Return the mean accuracy on the given test data and labels.
+        
+        Parameters
+        ----------
+        X : np.ndarray of shape (n_samples, n_features)
+            Test samples.
+        y : np.ndarray of shape (n_samples,)
+            True labels for X.
+            
+        Returns
+        -------
+        score : float
+            Mean accuracy of self.predict(X) with respect to y.
+        """
+        y_pred = self.predict(X)
+        return (y_pred == y).mean()
+    
+    def save(self, filepath: str):
+        """
+        Save model to file.
+        
+        Parameters
+        ----------
+        filepath : str
+            Path to save the model.
+        """
+        with open(filepath, 'wb') as f:
+            pickle.dump(self, f)
+    
+    @staticmethod
+    def load(filepath: str) -> "RABoostClassifier":
+        """
+        Load model from file.
+        
+        Parameters
+        ----------
+        filepath : str
+            Path to load the model from.
+            
+        Returns
+        -------
+        model : RABoostClassifier
+            Loaded model.
+        """
+        with open(filepath, 'rb') as f:
+            return pickle.load(f)
 
 
 class DecisionStump:
