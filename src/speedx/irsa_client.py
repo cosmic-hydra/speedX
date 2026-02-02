@@ -141,7 +141,7 @@ class IRSAClient:
                 
                 break  # Success
                 
-            except (requests.RequestException, requests.ConnectionError) as e:
+            except requests.RequestException as e:
                 if attempt < self.max_retries - 1:
                     # Exponential backoff
                     wait_time = (2 ** attempt) * self.rate_limit_delay
