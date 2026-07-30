@@ -274,7 +274,7 @@ def test_download_product(mast_client):
     # Mock download response
     responses.add(
         responses.GET,
-        "https://mast.stsci.edu/api/v0.1/Download/file",
+        "https://mast.stsci.edu/api/v0/Download/file",
         body=b"FITS data here",
         status=200
     )
